@@ -1,7 +1,7 @@
 """Rəqəmsal uçurum və əmək bazarı — Streamlit dashboard.
 
 Data:
-  * World Bank WDI API (canlı); əlçatan olmasa data/wdi_snapshot.csv istifadə olunur.
+  * data/wdi_snapshot.csv — World Bank WDI API-dən 23.11.2026-da yüklənib.
   * data/manual.csv — WDI-də olmayan göstəricilər (cins və şəhər/kənd üzrə internet istifadəsi).
 """
 
@@ -9,14 +9,10 @@ from pathlib import Path
 
 import pandas as pd
 import plotly.express as px
-import requests
 import streamlit as st
 
 DATA_DIR = Path(__file__).parent / "data"
-WB_URL = (
-    "https://api.worldbank.org/v2/country/{countries}/indicator/{indicator}"
-    "?format=json&date=2010:2025&per_page=1000"
-)
+DATA_DATE = "23.11.2026"
 
 COUNTRIES = {
     "AZE": "Azərbaycan",
@@ -61,27 +57,9 @@ def az(x, digits=1):
     return f"{x:.{digits}f}".replace(".", ",")
 
 
-@st.cache_data(ttl=24 * 3600, show_spinner="World Bank API-dən data yüklənir...")
+@st.cache_data
 def load_wdi():
-    rows = []
-    try:
-        for indicator in INDICATORS:
-            url = WB_URL.format(countries=";".join(COUNTRIES), indicator=indicator)
-            response = requests.get(url, timeout=15)
-            response.raise_for_status()
-            for rec in response.json()[1] or []:
-                if rec["value"] is not None:
-                    rows.append(
-                        {
-                            "indicator": indicator,
-                            "country": rec["countryiso3code"],
-                            "year": int(rec["date"]),
-                            "value": float(rec["value"]),
-                        }
-                    )
-        return pd.DataFrame(rows), "live"
-    except (requests.RequestException, ValueError, IndexError, KeyError, TypeError):
-        return pd.read_csv(DATA_DIR / "wdi_snapshot.csv"), "snapshot"
+    return pd.read_csv(DATA_DIR / "wdi_snapshot.csv")
 
 
 @st.cache_data
@@ -96,13 +74,14 @@ def style(fig, y_title=None):
         legend_title=None,
         margin=dict(t=40, b=10, l=10, r=10),
         hovermode="x unified",
+        separators=",.",
     )
     return fig
 
 
 st.set_page_config(page_title="Rəqəmsal uçurum və əmək bazarı", page_icon="📶", layout="wide")
 
-wdi, wdi_mode = load_wdi()
+wdi = load_wdi()
 wdi["Ölkə"] = wdi["country"].map(COUNTRIES)
 manual = load_manual()
 
@@ -114,10 +93,7 @@ selected_names = st.sidebar.multiselect(
 selected = [code for code, name in COUNTRIES.items() if name in selected_names] or ["AZE"]
 year = st.sidebar.slider("Müqayisə ili", 2010, 2025, 2024)
 st.sidebar.divider()
-if wdi_mode == "live":
-    st.sidebar.success("WDI datası: World Bank API (canlı)")
-else:
-    st.sidebar.warning("API əlçatan deyil — saxlanmış WDI snapshot istifadə olunur")
+st.sidebar.info(f"Data tarixi: {DATA_DATE} (World Bank WDI)")
 st.sidebar.caption(
     "Mənbələr: World Bank WDI, ITU, DSK. Bütün göstəricilər «Data» bölməsində yüklənə bilər."
 )
@@ -131,6 +107,7 @@ st.markdown(
 
 # ---------- Shared calculations ----------
 sex = manual[manual["indicator"] == "internet_users_by_sex"].copy()
+sex["year"] = sex["year"].astype(int)  # manual.csv-də boş illər var, pandas onları float oxuyur
 sex["Qrup"] = sex["group"].map(SEX_LABELS)
 sex_gap = sex.pivot_table(index="year", columns="group", values="value").reset_index()
 sex_gap["gap"] = sex_gap["male"] - sex_gap["female"]
@@ -280,7 +257,7 @@ with tab_labour:
         fig.update_traces(textposition="top center", marker_size=12)
         fig.update_layout(showlegend=False, xaxis_title="İnternet istifadəçiləri, %",
                           yaxis_title="Qadınların işçi qüvvəsində iştirakı, %",
-                          margin=dict(t=40, b=10, l=10, r=10))
+                          margin=dict(t=40, b=10, l=10, r=10), separators=",.")
         right.plotly_chart(fig, use_container_width=True)
         right.caption("Hər nöqtə bir ölkədir. Əlaqə zəifdirsə, internet tək başına məşğulluğu izah etmir.")
 
@@ -355,7 +332,7 @@ with tab_findings:
 
 # ---------- 6. Data & sources ----------
 with tab_data:
-    st.subheader("World Bank WDI")
+    st.subheader(f"World Bank WDI (data tarixi: {DATA_DATE})")
     wdi_table = wdi.assign(Göstərici=wdi["indicator"].map(INDICATORS))[
         ["Göstərici", "indicator", "Ölkə", "year", "value"]
     ].sort_values(["indicator", "Ölkə", "year"])

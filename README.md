@@ -5,7 +5,7 @@ Kollokvium layihəsi (Format A: açıq data ilə alət) üçün Streamlit dashbo
 **Sual:** Azərbaycanda internet istifadəsində cins və bölgə fərqləri necə dəyişib və onlar əmək bazarındakı fərqlərlə üst-üstə düşürmü?
 
 ## Data
-- `World Bank WDI API` — internet istifadəsi, sabit genişzolaqlı abunə, işçi qüvvəsində iştirak və məşğulluq (cins üzrə). Tətbiq datanı canlı oxuyur; API əlçatan olmasa `data/wdi_snapshot.csv` istifadə olunur.
+- `data/wdi_snapshot.csv` — World Bank WDI, 23.11.2026-da yüklənib: internet istifadəsi, sabit genişzolaqlı abunə, işçi qüvvəsində iştirak və məşğulluq (cins üzrə).
 - `data/manual.csv` — WDI-də olmayan göstəricilər (ITU, DSK, Dünya Bankı hesabatları), hər sətirdə mənbə ilə.
 
 ## İşə salmaq
