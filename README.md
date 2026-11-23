@@ -16,3 +16,14 @@ streamlit run app.py
 
 ## Deploy
 [share.streamlit.io](https://share.streamlit.io) → New app → bu repo, branch `main`, fayl `app.py`.
+
+## Səhifələr
+| URL | Bölmə |
+|---|---|
+| `/` | Ümumi baxış |
+| `/cins-ferqi` | Cins fərqi, 2010–2024 |
+| `/olkeler` | Ölkələrlə müqayisə |
+| `/seher-kend` | Şəhər və kənd |
+| `/emek-bazari` | Əmək bazarı |
+| `/tapintilar` | Üç tapıntı və data boşluqları |
+| `/data` | Data və mənbələr |
