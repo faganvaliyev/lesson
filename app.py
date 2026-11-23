@@ -437,7 +437,7 @@ def page_labour():
         st.info(f"{year} üçün əmək bazarı datası yoxdur.")
     else:
         fig = px.bar(lab_year, x="Ölkə", y="value", color="Qrup", barmode="group", facet_col="Göstərici",
-                     text=lab_year["value"].map(lambda v: az(v, 0)), color_discrete_map=SEX_COLORS)
+                     text=lab_year["value"].map(az), color_discrete_map=SEX_COLORS)
         fig.for_each_annotation(lambda a: a.update(text=a.text.split("=")[-1], font_size=14))
         fig.update_xaxes(title=None)
         chart(fig, "Kişilər və qadınlar", f"{year}, %", height=420, hovermode="closest")
