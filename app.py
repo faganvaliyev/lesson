@@ -99,6 +99,9 @@ footer { visibility: hidden; }
                     color: var(--muted); }
 .stat-card .value { font-size: 2rem; font-weight: 800; color: var(--strong); line-height: 1.15; margin: .35rem 0 .2rem; }
 .stat-card .note { font-size: .84rem; color: var(--muted); }
+.stat-card .src, .finding .src { font-size: .72rem; color: var(--muted); border-top: 1px solid var(--border-soft);
+                                 margin-top: .7rem; padding-top: .5rem; }
+.section-title { font-size: 1.15rem; font-weight: 700; color: var(--strong); margin: 0 0 .6rem; }
 
 .chart-title { font-size: 1.02rem; font-weight: 700; color: var(--strong); margin: .1rem 0 .1rem; }
 .chart-sub { font-size: .84rem; color: var(--muted); margin-bottom: .2rem; }
@@ -182,11 +185,12 @@ def page_header(kicker, title, subtitle=None):
 
 
 def stat_cards(cards):
-    """cards: (label, value, note, accent) siyahısı."""
+    """cards: (label, value, note, src, accent) siyahısı; src hər rəqəmin mənbəyidir."""
     items = "".join(
         f'<div class="stat-card" style="--card-accent:{accent}"><div class="label">{label}</div>'
-        f'<div class="value">{value}</div><div class="note">{note}</div></div>'
-        for label, value, note, accent in cards
+        f'<div class="value">{value}</div><div class="note">{note}</div>'
+        f'<div class="src">Mənbə: {src}</div></div>'
+        for label, value, note, src, accent in cards
     )
     html(f'<div class="stat-grid">{items}</div>')
 
@@ -307,13 +311,25 @@ def page_overview():
         "bazarındakı fərqlərlə üst-üstə düşürmü?</p>"
         f'<span class="badge">Data tarixi: {DATA_DATE} · World Bank WDI, ITU, DSK</span></div>'
     )
+    latest = sex_gap.set_index("year").loc[latest_sex_year]
+    emp_m = wdi_value("SL.EMP.TOTL.SP.MA.ZS", "AZE", 2024)
+    emp_f = wdi_value("SL.EMP.TOTL.SP.FE.ZS", "AZE", 2024)
+    html('<div class="section-title">Azərbaycan — əsas göstəricilər</div>')
     stat_cards([
-        ("İnternet istifadəçiləri", f"{az(net_value)}%", f"əhalinin payı, {net_year}", "#7F8C8D"),
-        ("Cins fərqi", f"{az(gap_by_year[latest_sex_year])} bənd", f"kişi − qadın, {latest_sex_year}", "#C0392B"),
-        ("Şəhər − kənd", f"{az(area_gap)} bənd", f"internet istifadəsi, {area_year}", "#E67E22"),
-        ("Məşğulluq fərqi", f"{az(emp_gap)} bənd", "kişi − qadın, 2024", "#2E86C1"),
+        ("İnternet istifadəçiləri", f"{az(net_value)}%",
+         f"Azərbaycan əhalisinin internetdən istifadə edən payı, {net_year}",
+         f"World Bank WDI, IT.NET.USER.ZS ({DATA_DATE})", "#7F8C8D"),
+        ("Cins fərqi", f"{az(gap_by_year[latest_sex_year])} bənd",
+         f"Azərbaycan, {latest_sex_year}: kişilər {az(latest['male'])}% − qadınlar {az(latest['female'])}%",
+         latest["source"], "#C0392B"),
+        ("Şəhər − kənd", f"{az(area_gap)} bənd",
+         f"Azərbaycan, {area_year}: şəhər {az(area_vals['urban'])}% − kənd {az(area_vals['rural'])}%",
+         area["source"].iloc[0], "#E67E22"),
+        ("Məşğulluq fərqi", f"{az(emp_gap)} bənd",
+         f"Azərbaycan, 2024: kişilər {az(emp_m)}% − qadınlar {az(emp_f)}% (15+ yaş)",
+         f"World Bank WDI / ILO, SL.EMP.TOTL.SP ({DATA_DATE})", "#2E86C1"),
     ])
-    html('<div class="chart-title" style="margin-bottom:.6rem">Bölmələr</div>')
+    html('<div class="section-title">Bölmələr</div>')
     cols = st.columns(3)
     for i, (page, text) in enumerate(SECTION_CARDS):
         with cols[i % 3].container(border=True):
@@ -325,8 +341,8 @@ def page_sex():
     page_header("Qrafik 1 · Zamanla dəyişmə", "Cins fərqi: əvvəl azaldı, sonra dayandı",
                 "Kişi və qadınlar arasında internet istifadəsi, Azərbaycan, 2010–2024.")
     stat_cards([
-        (str(row.year), f"{az(row.gap)} bənd", f"kişilər {az(row.male)}% · qadınlar {az(row.female)}%",
-         "#95A5A6" if row.year < 2019 else "#C0392B")
+        (f"Azərbaycan, {row.year}", f"{az(row.gap)} bənd", f"kişilər {az(row.male)}% − qadınlar {az(row.female)}%",
+         row.source, "#95A5A6" if row.year < 2019 else "#C0392B")
         for row in sex_gap.itertuples()
     ])
     left, right = st.columns(2)
@@ -387,11 +403,14 @@ def page_area():
     page_header("Qrafik 3 · Bölgə", "Şəhər və kənd: ən böyük fərq",
                 f"İnternet istifadə edənlər, {area_year}, və sabit genişzolaqlı internetin inkişafı.")
     stat_cards([
-        ("Şəhər", f"{az(area_vals['urban'])}%", f"internet istifadəsi, {area_year}", "#2E86C1"),
-        ("Kənd", f"{az(area_vals['rural'])}%", f"internet istifadəsi, {area_year}", "#C0392B"),
+        ("Şəhər", f"{az(area_vals['urban'])}%", f"Azərbaycan, şəhər əhalisinin internet istifadəsi, {area_year}",
+         area["source"].iloc[0], "#2E86C1"),
+        ("Kənd", f"{az(area_vals['rural'])}%", f"Azərbaycan, kənd əhalisinin internet istifadəsi, {area_year}",
+         area["source"].iloc[0], "#C0392B"),
         ("Fərq", f"{az(area_gap)} bənd",
-         f"cins fərqindən ({az(gap_by_year[latest_sex_year])}) {az(area_gap / gap_by_year[latest_sex_year])} dəfə böyük",
-         "#E67E22"),
+         f"cins fərqindən ({az(gap_by_year[latest_sex_year])} bənd) "
+         f"{az(area_gap / gap_by_year[latest_sex_year])} dəfə böyük",
+         "öz hesablama, ITU datası əsasında", "#E67E22"),
     ])
     left, right = st.columns([2, 3])
     with left:
@@ -449,10 +468,13 @@ def page_labour():
             chart(fig, "İnternet və qadınların işçi qüvvəsində iştirakı", f"{year}; hər nöqtə bir ölkədir",
                   y_title="Qadınlar, işçi qüvvəsində %", x_title="İnternet istifadəçiləri, %", hovermode="closest")
 
-    shares = manual[manual["indicator"] == "women_share_of_workers"].set_index("group")["value"]
+    shares_rows = manual[manual["indicator"] == "women_share_of_workers"].set_index("group")
+    shares = shares_rows["value"]
     stat_cards([
-        ("Nəqliyyat və anbar", f"{az(shares['transport_storage'])}%", "işçilərin qadın payı", "#C0392B"),
-        ("Enerji", f"{az(shares['energy'])}%", "işçilərin qadın payı", "#C0392B"),
+        ("Nəqliyyat və anbar", f"{az(shares['transport_storage'])}%", "Azərbaycan, sektor işçilərinin qadın payı",
+         shares_rows.loc["transport_storage", "source"], "#C0392B"),
+        ("Enerji", f"{az(shares['energy'])}%", "Azərbaycan, sektor işçilərinin qadın payı",
+         shares_rows.loc["energy", "source"], "#C0392B"),
     ])
     source(f"World Bank WDI ({DATA_DATE}); sektor payları — Dünya Bankı, «Breaking Barriers to Women's "
            "Employment in Azerbaijan»")
@@ -473,26 +495,31 @@ def page_findings():
     else:
         third = (
             f"{az(emp_m - emp_f)} bənd",
-            f"Qadınların məşğulluğu {az(emp_f)}%, kişilərin {az(emp_m)}% ({year}). İşçi qüvvəsində iştirak: "
+            f"Azərbaycanda qadınların məşğulluğu {az(emp_f)}%, kişilərin {az(emp_m)}% ({year}). İşçi qüvvəsində iştirak: "
             f"{az(lfp_f)}% və {az(lfp_m)}%. İnternetdə fərq isə {az(latest_gap)} bənd.",
         )
     findings = [
         ("Tapıntı 1 · Cins fərqi dayanıb", f"{az(latest_gap)} bənd",
-         f"Fərq {first_sex_year}-də {az(gap_by_year[first_sex_year])} bənd idi, 2015-də {az(gap_by_year[2015])} "
-         f"bəndə düşdü və {latest_sex_year}-də {az(latest_gap)} bənddə qaldı.",
-         "Giriş əsasən var; qalan fərq bacarıq və sosial normalarla bağlı ola bilər."),
+         f"Azərbaycanda kişi və qadınlar arasında internet fərqi {first_sex_year}-də "
+         f"{az(gap_by_year[first_sex_year])} bənd idi, 2015-də {az(gap_by_year[2015])} bəndə düşdü və "
+         f"{latest_sex_year}-də {az(latest_gap)} bənddə qaldı.",
+         "Giriş əsasən var; qalan fərq bacarıq və sosial normalarla bağlı ola bilər.",
+         "DSK (2010, 2015); ITU (2019, 2024)"),
         ("Tapıntı 2 · Kənd fərqi daha böyükdür", f"{az(area_gap)} bənd",
-         f"Kənddə istifadə {az(area_vals['rural'])}%, şəhərdə {az(area_vals['urban'])}% — cins fərqindən "
-         f"{az(area_gap / latest_gap)} dəfə böyük.",
-         f"Sabit internet zəifdir: 100 nəfərə {az(bb_aze, 2)} abunə (2024)."),
+         f"Azərbaycanda kənddə istifadə {az(area_vals['rural'])}%, şəhərdə {az(area_vals['urban'])}% "
+         f"({area_year}) — cins fərqindən {az(area_gap / latest_gap)} dəfə böyük.",
+         f"Sabit internet zəifdir: 100 nəfərə {az(bb_aze, 2)} abunə (2024).",
+         f"{area['source'].iloc[0]}; World Bank WDI, IT.NET.BBND.P2 ({DATA_DATE})"),
         ("Tapıntı 3 · Əmək bazarında fərq", third[0], third[1],
-         "Bu korrelyasiyadır, səbəb deyil: təhsil seçimi və normalar hər ikisinə təsir edə bilər."),
+         "Bu korrelyasiyadır, səbəb deyil: təhsil seçimi və normalar hər ikisinə təsir edə bilər.",
+         f"World Bank WDI / ILO, 15+ yaş ({DATA_DATE}); internet fərqi — ITU"),
     ]
     cols = st.columns(3)
-    for col, (tag, big, text, why) in zip(cols, findings):
+    for col, (tag, big, text, why, src) in zip(cols, findings):
         with col:
             html(f'<div class="finding"><div class="tag">{tag.upper()}</div><div class="big">{big}</div>'
-                 f'<div class="text">{text}</div><div class="why"><b>Mümkün səbəb:</b> {why}</div></div>')
+                 f'<div class="text">{text}</div><div class="why"><b>Mümkün səbəb:</b> {why}</div>'
+                 f'<div class="src">Mənbə: {src}</div></div>')
 
     html('<div class="page-title" style="font-size:1.4rem;margin-top:2.2rem">Data nəyi göstərmir</div>')
     rows = "".join(f"<tr><td>{a}</td><td>{b}</td><td>{c}</td></tr>" for a, b, c in MISSING_DATA)
