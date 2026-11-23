@@ -33,7 +33,7 @@ COUNTRY_COLORS = {
     "Ermənistan": "#AF7AC5",
     "Türkiyə": "#E67E22",
     "Özbəkistan": "#5D6D7E",
-    "Dünya": "#2C3E50",
+    "Dünya": "#7F8C8D",
 }
 SEX_LABELS = {"male": "Kişilər", "female": "Qadınlar"}
 SEX_COLORS = {"Kişilər": "#2E86C1", "Qadınlar": "#C0392B"}
@@ -64,20 +64,27 @@ MISSING_DATA = [
     ("Vakansiyalarda rəqəmsal tələb", "İşəgötürənlərin real ehtiyacı", "HH.az, Boss.az elanları"),
 ]
 
+# Rənglər CSS dəyişənlərindədir; açıq/qaranlıq rejim yalnız :root dəyərlərini dəyişir (bax PALETTES).
 CSS = """
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+:root { %VARS% }
 html, body, .stApp, .stMarkdown, button, input, textarea { font-family: 'Inter', sans-serif; }
+.stApp, [data-testid="stHeader"] { background: var(--bg); }
+.stApp, .stMarkdown p, .stMarkdown li, [data-testid="stWidgetLabel"] p { color: var(--text); }
+[data-testid="stCaptionContainer"], [data-testid="stCaptionContainer"] p { color: var(--muted) !important; }
+.stMarkdown a { color: var(--accent); }
+.stMarkdown code { background: var(--surface2); color: var(--strong); }
 .block-container { padding-top: 2.2rem; max-width: 1180px; }
 footer { visibility: hidden; }
 
 .kicker { font-size: .72rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
-          color: #C0392B; margin-bottom: .35rem; }
-.page-title { font-size: 2.1rem; font-weight: 800; color: #111827; line-height: 1.15; margin: 0 0 .4rem; }
-.page-sub { font-size: 1.02rem; color: #4B5563; max-width: 820px; margin-bottom: 1.4rem; }
+          color: var(--accent); margin-bottom: .35rem; }
+.page-title { font-size: 2.1rem; font-weight: 800; color: var(--strong); line-height: 1.15; margin: 0 0 .4rem; }
+.page-sub { font-size: 1.02rem; color: var(--muted); max-width: 820px; margin-bottom: 1.4rem; }
 
-.hero { background: linear-gradient(135deg, #1F2937 0%, #7B241C 100%); border-radius: 18px;
-        padding: 2.4rem 2.4rem 2.1rem; margin-bottom: 1.6rem; color: #F9FAFB; }
+.hero { background: linear-gradient(135deg, #1F2937 0%, #7B241C 100%); border: 1px solid var(--border);
+        border-radius: 18px; padding: 2.4rem 2.4rem 2.1rem; margin-bottom: 1.6rem; color: #F9FAFB; }
 .hero .kicker { color: #FCA5A5; }
 .hero h1 { font-size: 2.5rem; font-weight: 800; margin: 0 0 .7rem; color: #FFFFFF; line-height: 1.1; }
 .hero p { font-size: 1.08rem; color: #E5E7EB; max-width: 760px; margin: 0; }
@@ -86,45 +93,77 @@ footer { visibility: hidden; }
 
 .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 1rem;
              margin: .2rem 0 1.6rem; }
-.stat-card { background: #FFFFFF; border: 1px solid #E5E7EB; border-top: 4px solid var(--accent, #C0392B);
+.stat-card { background: var(--surface); border: 1px solid var(--border); border-top: 4px solid var(--card-accent, #C0392B);
              border-radius: 14px; padding: 1rem 1.15rem; box-shadow: 0 1px 2px rgba(17,24,39,.04); }
 .stat-card .label { font-size: .74rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
-                    color: #6B7280; }
-.stat-card .value { font-size: 2rem; font-weight: 800; color: #111827; line-height: 1.15; margin: .35rem 0 .2rem; }
-.stat-card .note { font-size: .84rem; color: #6B7280; }
+                    color: var(--muted); }
+.stat-card .value { font-size: 2rem; font-weight: 800; color: var(--strong); line-height: 1.15; margin: .35rem 0 .2rem; }
+.stat-card .note { font-size: .84rem; color: var(--muted); }
 
-.chart-title { font-size: 1.02rem; font-weight: 700; color: #111827; margin: .1rem 0 .1rem; }
-.chart-sub { font-size: .84rem; color: #6B7280; margin-bottom: .2rem; }
-.source { font-size: .78rem; color: #6B7280; border-left: 3px solid #E5E7EB; padding-left: .65rem;
+.chart-title { font-size: 1.02rem; font-weight: 700; color: var(--strong); margin: .1rem 0 .1rem; }
+.chart-sub { font-size: .84rem; color: var(--muted); margin-bottom: .2rem; }
+.source { font-size: .78rem; color: var(--muted); border-left: 3px solid var(--border); padding-left: .65rem;
           margin: .2rem 0 1.6rem; }
-.callout { background: #FFF7ED; border-left: 4px solid #F59E0B; border-radius: 10px; padding: .85rem 1rem;
-           font-size: .9rem; color: #78350F; margin: .4rem 0 1.4rem; }
+.callout { background: var(--callout-bg); border-left: 4px solid #F59E0B; border-radius: 10px; padding: .85rem 1rem;
+           font-size: .9rem; color: var(--callout-text); margin: .4rem 0 1.4rem; }
 
-.finding { background: #FFFFFF; border: 1px solid #E5E7EB; border-radius: 16px; padding: 1.3rem 1.3rem 1.1rem;
-           height: 100%; box-shadow: 0 1px 2px rgba(17,24,39,.04); }
-.finding .tag { font-size: .7rem; font-weight: 700; letter-spacing: .1em; color: #C0392B; }
-.finding .big { font-size: 2.3rem; font-weight: 800; color: #111827; margin: .3rem 0 .5rem; }
-.finding .text { font-size: .95rem; color: #374151; margin-bottom: .9rem; }
-.finding .why { font-size: .86rem; color: #4B5563; background: #F9FAFB; border-radius: 10px; padding: .7rem .8rem; }
-.finding .why b { color: #111827; }
+.finding { background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+           padding: 1.3rem 1.3rem 1.1rem; height: 100%; box-shadow: 0 1px 2px rgba(17,24,39,.04); }
+.finding .tag { font-size: .7rem; font-weight: 700; letter-spacing: .1em; color: var(--accent); }
+.finding .big { font-size: 2.3rem; font-weight: 800; color: var(--strong); margin: .3rem 0 .5rem; }
+.finding .text { font-size: .95rem; color: var(--text); margin-bottom: .9rem; }
+.finding .why { font-size: .86rem; color: var(--text); background: var(--surface2); border-radius: 10px;
+                padding: .7rem .8rem; }
+.finding .why b { color: var(--strong); }
 
-table.nice { width: 100%; border-collapse: collapse; font-size: .9rem; background: #FFFFFF;
-             border: 1px solid #E5E7EB; border-radius: 12px; overflow: hidden; }
+table.nice { width: 100%; border-collapse: collapse; font-size: .9rem; background: var(--surface);
+             border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
 table.nice th { text-align: left; font-size: .72rem; letter-spacing: .06em; text-transform: uppercase;
-                color: #6B7280; background: #F9FAFB; padding: .7rem .9rem; border-bottom: 1px solid #E5E7EB; }
-table.nice td { padding: .7rem .9rem; border-bottom: 1px solid #F3F4F6; color: #374151; vertical-align: top; }
+                color: var(--muted); background: var(--surface2); padding: .7rem .9rem;
+                border-bottom: 1px solid var(--border); }
+table.nice td { padding: .6rem .9rem; border-bottom: 1px solid var(--border-soft); color: var(--text); vertical-align: top; }
 table.nice tr:last-child td { border-bottom: none; }
-table.nice td:first-child { font-weight: 600; color: #111827; }
+table.nice td:first-child { font-weight: 600; color: var(--strong); }
+.table-scroll { max-height: 380px; overflow: auto; border: 1px solid var(--border); border-radius: 12px;
+                margin-bottom: .8rem; }
+.table-scroll table.nice { border: none; border-radius: 0; }
+.table-scroll th { position: sticky; top: 0; }
 
-[data-testid="stVerticalBlockBorderWrapper"] { background: #FFFFFF; border-radius: 16px; }
+[data-testid="stVerticalBlockBorderWrapper"] { background: var(--surface); border-color: var(--border) !important;
+                                               border-radius: 16px; }
+[data-baseweb="select"] > div { background: var(--surface) !important; border-color: var(--border) !important; }
+[data-baseweb="select"] input, [data-baseweb="select"] div { color: var(--text); }
+[data-baseweb="select"] svg { fill: var(--muted); }
+[data-baseweb="popover"] ul, [data-baseweb="popover"] li { background: var(--surface) !important; color: var(--text) !important; }
+[data-baseweb="popover"] li:hover { background: var(--surface2) !important; }
+[data-testid="stPageLink"] a p, [data-testid="stPageLink"] a span { color: var(--strong) !important; }
+.stDownloadButton button { background: var(--surface2); color: var(--strong); border-color: var(--border); }
+
 [data-testid="stSidebar"] { background: #111827; }
 [data-testid="stSidebar"] * { color: #E5E7EB; }
 [data-testid="stSidebarNav"] a[aria-current="page"] { background: rgba(192,57,43,.25); }
-.side-brand { font-weight: 800; font-size: 1.05rem; color: #FFFFFF; margin: .2rem 0 .1rem; }
 .side-date { margin-top: 1rem; font-size: .8rem; padding: .55rem .75rem; border-radius: 10px;
              background: rgba(255,255,255,.07); }
 </style>
 """
+
+PALETTES = {
+    "light": {
+        "bg": "#F5F6F8", "surface": "#FFFFFF", "surface2": "#F9FAFB", "border": "#E5E7EB",
+        "border-soft": "#F3F4F6", "text": "#374151", "strong": "#111827", "muted": "#6B7280",
+        "accent": "#C0392B", "callout-bg": "#FFF7ED", "callout-text": "#78350F", "grid": "#E5E7EB",
+    },
+    "dark": {
+        "bg": "#0F1420", "surface": "#181F2C", "surface2": "#212A3A", "border": "#2B3547",
+        "border-soft": "#232C3C", "text": "#D1D5DB", "strong": "#F9FAFB", "muted": "#9CA3AF",
+        "accent": "#F87171", "callout-bg": "#2A2113", "callout-text": "#FCD34D", "grid": "#2B3547",
+    },
+}
+
+
+def palette():
+    return PALETTES["dark" if st.session_state.get("dark_mode") else "light"]
+
 
 
 # ---------- Helpers ----------
@@ -145,11 +184,17 @@ def page_header(kicker, title, subtitle=None):
 def stat_cards(cards):
     """cards: (label, value, note, accent) siyahısı."""
     items = "".join(
-        f'<div class="stat-card" style="--accent:{accent}"><div class="label">{label}</div>'
+        f'<div class="stat-card" style="--card-accent:{accent}"><div class="label">{label}</div>'
         f'<div class="value">{value}</div><div class="note">{note}</div></div>'
         for label, value, note, accent in cards
     )
     html(f'<div class="stat-grid">{items}</div>')
+
+
+def html_table(df):
+    # st.dataframe canvas-da çəkilir və CSS ilə rənglənmir, ona görə qaranlıq rejim üçün HTML cədvəl
+    table = df.to_html(index=False, border=0, classes="nice", float_format=lambda v: az(v, 2))
+    html(f'<div class="table-scroll">{table}</div>')
 
 
 def source(text):
@@ -157,9 +202,10 @@ def source(text):
 
 
 def chart(fig, title, subtitle=None, y_title=None, x_title=None, height=380, hovermode="x unified"):
+    colors = palette()
     fig.update_layout(
-        template="plotly_white",
-        font=dict(family="Inter, sans-serif", size=13, color="#374151"),
+        template="plotly_dark" if st.session_state.get("dark_mode") else "plotly_white",
+        font=dict(family="Inter, sans-serif", size=13, color=colors["text"]),
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
         xaxis_title=x_title,
@@ -171,6 +217,8 @@ def chart(fig, title, subtitle=None, y_title=None, x_title=None, height=380, hov
         hovermode=hovermode,
         separators=",.",
     )
+    fig.update_xaxes(gridcolor=colors["grid"], zerolinecolor=colors["grid"])
+    fig.update_yaxes(gridcolor=colors["grid"], zerolinecolor=colors["grid"])
     with st.container(border=True):
         sub = f'<div class="chart-sub">{subtitle}</div>' if subtitle else ""
         html(f'<div class="chart-title">{title}</div>{sub}')
@@ -260,7 +308,7 @@ def page_overview():
         f'<span class="badge">Data tarixi: {DATA_DATE} · World Bank WDI, ITU, DSK</span></div>'
     )
     stat_cards([
-        ("İnternet istifadəçiləri", f"{az(net_value)}%", f"əhalinin payı, {net_year}", "#2C3E50"),
+        ("İnternet istifadəçiləri", f"{az(net_value)}%", f"əhalinin payı, {net_year}", "#7F8C8D"),
         ("Cins fərqi", f"{az(gap_by_year[latest_sex_year])} bənd", f"kişi − qadın, {latest_sex_year}", "#C0392B"),
         ("Şəhər − kənd", f"{az(area_gap)} bənd", f"internet istifadəsi, {area_year}", "#E67E22"),
         ("Məşğulluq fərqi", f"{az(emp_gap)} bənd", "kişi − qadın, 2024", "#2E86C1"),
@@ -329,7 +377,7 @@ def page_countries():
             axis=1,
         )
         fig = px.bar(gaps, x="Etiket", y="value", text=gaps["value"].map(az), color="Etiket",
-                     color_discrete_sequence=["#C0392B", "#2C3E50", "#17A589"])
+                     color_discrete_sequence=["#C0392B", "#7F8C8D", "#17A589"])
         fig.update_layout(showlegend=False)
         chart(fig, "Kişi və qadın arasında fərq", "Faiz bəndi; illər fərqlidir", hovermode="closest")
     source(f"World Bank WDI ({DATA_DATE}); ITU (Report.az, 10.03.2025); ITU Facts and Figures 2025; dig.watch")
@@ -461,11 +509,11 @@ def page_data():
     ].sort_values(["indicator", "Ölkə", "year"])
     with st.container(border=True):
         html(f'<div class="chart-title">World Bank WDI ({DATA_DATE})</div>')
-        st.dataframe(wdi_table, use_container_width=True, hide_index=True, height=320)
+        html_table(wdi_table)
         st.download_button("CSV yüklə", wdi_table.to_csv(index=False).encode("utf-8"), "wdi.csv", "text/csv")
     with st.container(border=True):
         html('<div class="chart-title">Əl ilə toplanmış göstəricilər (ITU, DSK, Dünya Bankı hesabatları)</div>')
-        st.dataframe(manual, use_container_width=True, hide_index=True)
+        html_table(manual.assign(year=manual["year"].astype("Int64").astype(str).replace("<NA>", "")).fillna(""))
         st.download_button("CSV yüklə", manual.to_csv(index=False).encode("utf-8"), "manual.csv", "text/csv",
                            key="manual_csv")
     html('<div class="chart-title" style="margin-top:1rem">WDI göstəriciləri</div>')
@@ -476,7 +524,9 @@ def page_data():
 
 # ---------- App ----------
 st.set_page_config(page_title="Rəqəmsal uçurum və əmək bazarı", page_icon="📶", layout="wide")
-html(CSS)
+with st.sidebar:
+    st.toggle("Qaranlıq rejim", key="dark_mode")
+html(CSS.replace("%VARS%", " ".join(f"--{name}: {value};" for name, value in palette().items())))
 
 PAGE_OVERVIEW = st.Page(page_overview, title="Ümumi baxış", icon=":material/home:", url_path="umumi-baxis", default=True)
 PAGE_SEX = st.Page(page_sex, title="Cins fərqi", icon=":material/wc:", url_path="cins-ferqi")
